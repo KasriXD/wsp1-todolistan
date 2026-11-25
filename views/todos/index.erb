@@ -1,1 +1,91 @@
-<img src="/img/glhf.png">
+<header class="topbar">
+  <a href="/">ToDos</a>
+  <a href="/categories">Kategorier</a>
+</header>
+
+<main class="page">
+  <section class="todo-area">
+    <h1>Todo</h1>
+    <div class="cards">
+      <% @todos.select { |todo| todo['status'].to_i == 0 }.each do |todo| %>
+        <article class="todo-card <%= todo['status'].to_i == 1 ? 'done' : '' %>">
+          <form class="edit-form" action="/todos/<%= todo['id'] %>/update" method="post">
+            <input class="card-title" name="name" value="<%= Rack::Utils.escape_html(todo['name']) %>" aria-label="Titel">
+            <textarea name="description" aria-label="Beskrivning"><%= todo['description'] %></textarea>
+            <span class="category-name"><%= todo['category_name'] || 'Ingen kategori' %></span>
+            <select name="category_id" aria-label="Kategori">
+              <option value="0">Ingen kategori</option>
+              <% @categories.each do |category| %>
+                <option value="<%= category['id'] %>" <%= 'selected' if category['id'] == todo['category_id'] %>><%= category['name'] %></option>
+              <% end %>
+            </select>
+            <button type="submit" class="text-button">Spara ändringar</button>
+          </form>
+          <div class="actions">
+            <form action="/todos/<%= todo['id'] %>/delete" method="post"><button>Ta bort</button></form>
+            <form action="/todos/<%= todo['id'] %>/toggle" method="post"><button>Färdig</button></form>
+          </div>
+        </article>
+      <% end %>
+    </div>
+
+    <h1 class="done-heading">Färdiga</h1>
+    <div class="cards">
+      <% @todos.select { |todo| todo['status'].to_i == 1 }.each do |todo| %>
+        <article class="todo-card done">
+          <form class="edit-form" action="/todos/<%= todo['id'] %>/update" method="post">
+            <input class="card-title" name="name" value="<%= Rack::Utils.escape_html(todo['name']) %>" aria-label="Titel">
+            <textarea name="description" aria-label="Beskrivning"><%= todo['description'] %></textarea>
+            <span class="category-name"><%= todo['category_name'] || 'Ingen kategori' %></span>
+            <select name="category_id" aria-label="Kategori">
+              <option value="0">Ingen kategori</option>
+              <% @categories.each do |category| %>
+                <option value="<%= category['id'] %>" <%= 'selected' if category['id'] == todo['category_id'] %>><%= category['name'] %></option>
+              <% end %>
+            </select>
+            <button type="submit" class="text-button">Spara ändringar</button>
+          </form>
+          <div class="actions">
+            <form action="/todos/<%= todo['id'] %>/delete" method="post"><button>Ta bort</button></form>
+            <form action="/todos/<%= todo['id'] %>/toggle" method="post"><button>Ofärdig</button></form>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </section>
+
+  <aside class="new-todo">
+    <h1>Ny todo!</h1>
+    <form action="/todos" method="post">
+      <label for="name">Titel</label>
+      <input id="name" name="name" required>
+      <label for="description">Beskrivning</label>
+      <textarea id="description" name="description"></textarea>
+      <label for="category_id">Kategori:</label>
+      <select id="category_id" name="category_id">
+        <option value="0">Ingen kategori</option>
+        <% @categories.each do |category| %>
+          <option value="<%= category['id'] %>"><%= category['name'] %></option>
+        <% end %>
+      </select>
+      <button class="save-button" type="submit">Spara</button>
+    </form>
+
+    <% if request.path == '/categories' %>
+      <div class="category-manager">
+        <h2>Kategorier</h2>
+        <form action="/categories" method="post">
+          <label for="category-name">Ny kategori</label>
+          <input id="category-name" name="name" required>
+          <button class="save-button">Lägg till</button>
+        </form>
+        <% @categories.each do |category| %>
+          <div class="category-row">
+            <span><%= category['name'] %></span>
+            <form action="/categories/<%= category['id'] %>/delete" method="post"><button>Ta bort</button></form>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </aside>
+</main>
